@@ -2,7 +2,7 @@ import pygame
 import random
 
 pygame.init()
-size = 400, 600
+size = 660, 340
 screen = pygame.display.set_mode(size)
 
 def draw_n(n, pos, size):
@@ -11,17 +11,19 @@ def draw_n(n, pos, size):
     screen.blit(text, pos)
 
 class Board:
-    # создание поля
-    def __init__(self, width, height, value):
-        self.width = width
-        self.height = height
-        self.board = [[value] * width for _ in range(height)]
-        # значения по умолчанию
-        self.left = 10
-        self.top = 10
+    water = pygame.Color('blue')
+    ship = pygame.Color((51, 51, 51))
+    miss = pygame.Color((0, 0, 153))
+    hit = pygame.Color('red')
+
+    def __init__(self):
+        self.width = 10
+        self.height = 10
+        self.board = [[Board.water] * self.width for _ in range(self.height)]
+        self.left = 0
+        self.top = 0
         self.cell_size = 30
 
-    # настройка внешнего вида
     def set_view(self, left, top, cell_size):
         self.left = left
         self.top = top
@@ -34,8 +36,20 @@ class Board:
             return None
         return cell_x, cell_y
 
-
-
+    def render(self):
+        radius = self.cell_size // 2
+        for y in range(self.height):
+            for x in range(self.width):
+                left = self.left + x * self.cell_size
+                top = self.top + y * self.cell_size
+                rect = (left, top, self.cell_size, self.cell_size)
+                pygame.draw.rect(screen, self.board[y][x], rect)
+                pygame.draw.rect(screen, pygame.Color('white'), rect, 2)
+                
+player = Board()
+enemy = Board()
+player.set_view(20, 20, 30)
+enemy.set_view(340, 20, 30)
 running = True
 while running:
     for event in pygame.event.get():
@@ -43,5 +57,7 @@ while running:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             pass
-    screen.fill((0, 0, 0))
+    screen.fill(pygame.Color('black'))
+    player.render()
+    enemy.render()
     pygame.display.flip()
