@@ -12,7 +12,7 @@ def draw_n(n, pos, size):
 
 class Board:
     water = pygame.Color('blue')
-    ship = pygame.Color((51, 51, 51))
+    ship = pygame.Color((166, 166, 166))
     miss = pygame.Color((0, 0, 153))
     hit = pygame.Color('red')
 
@@ -44,14 +44,20 @@ class Board:
             for dy in [-1, 0, 1]:
                 if self.is_out(x + dx, y + dy):
                     continue
-                if self.board[y + dy][x + dx] != water:
+                if self.board[y + dy][x + dx] != Board.water:
                     return False
+        return True
+
+    def is_valid(self, ship):
+        for x, y in ship:
+            if self.is_out(x, y) or not self.is_free(x, y):
+                return False
         return True
 
     def random_ship(self, decks):
         result = []
         x = random.randint(0, self.width - 1)
-        y = random.randint(0, self.height-1)
+        y = random.randint(0, self.height - 1)
         direction = random.randint(0, 1)
         dx, dy = 0, 0
         if direction == 0:
@@ -61,6 +67,18 @@ class Board:
         for deck in range(decks):
             result.append((x + dx * deck, y + dy * deck))
         return result
+
+    def random_valid_ship(self, decks):
+        while True:
+            ship = self.random_ship(decks)
+            if self.is_valid(ship):
+                return ship
+
+    def disposition(self):
+        for deck in [4, 3, 3, 2, 2, 2, 1, 1, 1, 1]:
+            ship = self.random_valid_ship(deck)
+            for x, y in ship:
+                self.board[y][x] = Board.ship
 
     def render(self):
         radius = self.cell_size // 2
@@ -73,9 +91,9 @@ class Board:
                 pygame.draw.rect(screen, pygame.Color('white'), rect, 2)
                 
 player = Board()
-ship = player.random_ship(3)
-print(ship)
+player.disposition()
 enemy = Board()
+enemy.disposition()
 player.set_view(20, 20, 30)
 enemy.set_view(340, 20, 30)
 running = True
