@@ -12,17 +12,18 @@ def draw_n(n, pos, size):
 
 class Board:
     water = pygame.Color('blue')
-    ship = pygame.Color((166, 166, 166))
     miss = pygame.Color((0, 0, 153))
-    hit = pygame.Color('red')
+    ship = pygame.Color((166, 166, 166))
+    injured = pygame.Color('orange')
+    dead = pygame.Color('red')
 
     def __init__(self):
         self.width = 10
         self.height = 10
-        self.board = [[Board.water] * self.width for _ in range(self.height)]
         self.left = 0
         self.top = 0
         self.cell_size = 30
+        self.disposition()
 
     def set_view(self, left, top, cell_size):
         self.left = left
@@ -48,7 +49,7 @@ class Board:
                     return False
         return True
 
-    def is_valid(self, ship):
+    def is_valid_ship(self, ship):
         for x, y in ship:
             if self.is_out(x, y) or not self.is_free(x, y):
                 return False
@@ -71,14 +72,30 @@ class Board:
     def random_valid_ship(self, decks):
         while True:
             ship = self.random_ship(decks)
-            if self.is_valid(ship):
+            if self.is_valid_ship(ship):
                 return ship
 
     def disposition(self):
+        self.board = [[Board.water] * self.width for _ in range(self.height)]
         for deck in [4, 3, 3, 2, 2, 2, 1, 1, 1, 1]:
             ship = self.random_valid_ship(deck)
             for x, y in ship:
                 self.board[y][x] = Board.ship
+
+    def is_valid_shot(self, shot):
+        x, y = shot
+        return self.board[y][x] in [Board.water, Board.ship]
+
+    def random_shot(self):
+        x = random.randint(0, self.width - 1)
+        y = random.randint(0, self.height - 1)        
+        return x, y
+
+    def random_valid_shot(self):
+        while True:
+            shot = self.random_shot()
+            if self.is_valid_shot(shot):
+                return shot
 
     def render(self):
         radius = self.cell_size // 2
@@ -89,11 +106,10 @@ class Board:
                 rect = (left, top, self.cell_size, self.cell_size)
                 pygame.draw.rect(screen, self.board[y][x], rect)
                 pygame.draw.rect(screen, pygame.Color('white'), rect, 2)
+
                 
 player = Board()
-player.disposition()
 enemy = Board()
-enemy.disposition()
 player.set_view(20, 20, 30)
 enemy.set_view(340, 20, 30)
 running = True
@@ -102,7 +118,9 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            pass
+            cell = enemy.get_cell(event.pos)
+            if cell != None and enemy.is_valid_shot(cell):
+                print(cell) # to do
     screen.fill(pygame.Color('black'))
     player.render()
     enemy.render()
