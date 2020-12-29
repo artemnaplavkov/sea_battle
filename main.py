@@ -91,6 +91,47 @@ class Board:
         y = random.randint(0, self.height - 1)        
         return x, y
 
+    def get_ship(self, cell):
+        ship = []
+        queue = [cell]
+        while len(queue) != 0:
+            x, y = queue.pop(0)
+            if self.is_out(x, y):
+                continue
+            if self.board[y][x] in [Board.water, Board.miss]:
+                continue
+            if (x, y) in ship:
+                continue
+            ship.append((x, y))
+            queue.append((x, y - 1))
+            queue.append((x + 1, y))
+            queue.append((x, y + 1))
+            queue.append((x - 1, y))
+        return ship
+
+    def is_ship_dead(self, ship):
+        for x, y in ship:
+            if self.board[y][x] == Board.ship:
+                return False
+        return True
+
+    def set_ship_dead(self, ship):
+        for x, y in ship:
+            self.board[y][x] = Board.dead
+
+    def on_shot(self, shot):
+        x, y = shot
+        if self.board[y][x] == Board.water:
+            self.board[y][x] = Board.miss
+            return False
+        if self.board[y][x] == Board.ship:
+            self.board[y][x] = Board.injured
+            ship = self.get_ship(shot)
+            if self.is_ship_dead(ship):
+                self.set_ship_dead(ship)
+            return True
+
+
     def random_valid_shot(self):
         while True:
             shot = self.random_shot()
@@ -120,7 +161,7 @@ while running:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             cell = enemy.get_cell(event.pos)
             if cell != None and enemy.is_valid_shot(cell):
-                print(cell) # to do
+                enemy.on_shot(cell)
     screen.fill(pygame.Color('black'))
     player.render()
     enemy.render()
