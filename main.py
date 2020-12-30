@@ -119,6 +119,7 @@ class Board:
         for x, y in ship:
             self.board[y][x] = Board.dead
 
+
     def on_shot(self, shot):
         x, y = shot
         if self.board[y][x] == Board.water:
@@ -126,6 +127,9 @@ class Board:
             return False
         if self.board[y][x] == Board.ship:
             self.board[y][x] = Board.injured
+            for dx, dy in [(-1, -1), (1, -1), (-1, 1), (1, 1)]:
+                if not self.is_out(x + dx, y + dy):
+                    self.board[y + dy][x + dx] = Board.miss
             ship = self.get_ship(shot)
             if self.is_ship_dead(ship):
                 self.set_ship_dead(ship)
