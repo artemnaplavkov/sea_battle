@@ -118,6 +118,9 @@ class Board:
     def set_ship_dead(self, ship):
         for x, y in ship:
             self.board[y][x] = Board.dead
+            for dx, dy in [(-1, 0), (0, -1), (1, 0), (0, 1)]:
+                if not self.is_out(x + dx, y + dy) and self.board[y + dy][x + dx] == Board.water:
+                    self.board[y + dy][x + dx] = Board.miss
 
 
     def on_shot(self, shot):
@@ -142,14 +145,17 @@ class Board:
             if self.is_valid_shot(shot):
                 return shot
 
-    def render(self):
+    def render(self, hidden):
         radius = self.cell_size // 2
         for y in range(self.height):
             for x in range(self.width):
                 left = self.left + x * self.cell_size
                 top = self.top + y * self.cell_size
                 rect = (left, top, self.cell_size, self.cell_size)
-                pygame.draw.rect(screen, self.board[y][x], rect)
+                color = self.board[y][x]
+                if hidden and color in [Board.water, Board.ship]:
+                    color = pygame.Color('black')
+                pygame.draw.rect(screen, color, rect)
                 pygame.draw.rect(screen, pygame.Color('white'), rect, 2)
 
                 
@@ -167,6 +173,6 @@ while running:
             if cell != None and enemy.is_valid_shot(cell):
                 enemy.on_shot(cell)
     screen.fill(pygame.Color('black'))
-    player.render()
-    enemy.render()
+    player.render(False)
+    enemy.render(True)
     pygame.display.flip()
