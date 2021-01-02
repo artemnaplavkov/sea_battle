@@ -17,7 +17,8 @@ class Board:
     injured = pygame.Color('orange')
     dead = pygame.Color('red')
 
-    def __init__(self):
+    def __init__(self, hidden):
+        self.hidden = hidden
         self.width = 10
         self.height = 10
         self.left = 0
@@ -145,7 +146,7 @@ class Board:
             if self.is_valid_shot(shot):
                 return shot
 
-    def render(self, hidden):
+    def render(self):
         radius = self.cell_size // 2
         for y in range(self.height):
             for x in range(self.width):
@@ -153,26 +154,45 @@ class Board:
                 top = self.top + y * self.cell_size
                 rect = (left, top, self.cell_size, self.cell_size)
                 color = self.board[y][x]
-                if hidden and color in [Board.water, Board.ship]:
+                if self.hidden and color in [Board.water, Board.ship]:
                     color = pygame.Color('black')
                 pygame.draw.rect(screen, color, rect)
                 pygame.draw.rect(screen, pygame.Color('white'), rect, 2)
-
                 
-player = Board()
-enemy = Board()
+    def is_dead(self):
+        for y in range(self.height):
+            for x in range(self.width):
+                if self.board[y][x] == Board.ship:
+                    return False
+        return True
+
+player = Board(False)
+enemy = Board(True)
 player.set_view(20, 20, 30)
 enemy.set_view(340, 20, 30)
+clock = pygame.time.Clock()
 running = True
+enemy_turn = False
 while running:
+    if enemy_turn:
+        cell = player.random_valid_shot()
+        enemy_turn = player.on_shot(cell)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             cell = enemy.get_cell(event.pos)
             if cell != None and enemy.is_valid_shot(cell):
-                enemy.on_shot(cell)
+                enemy_turn = not enemy.on_shot(cell)
     screen.fill(pygame.Color('black'))
-    player.render(False)
-    enemy.render(True)
+    player.render()
+    enemy.render()
     pygame.display.flip()
+    if player.is_dead() or enemy.is_dead():
+        running = False
+    clock.tick(5)
+print('game over')
+if player.is_dead():
+    print('you losе')
+if enemy.is_dead():
+    print('you win!')
