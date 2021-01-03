@@ -166,13 +166,24 @@ class Board:
                     return False
         return True
 
+def draw_text(txt):
+    font = pygame.font.Font(None, 50)
+    text = font.render(txt, True, (100, 255, 100))
+    text_x = screen.get_width() // 2 - text.get_width() // 2
+    text_y = screen.get_height() // 2 - text.get_height() // 2
+    text_w = text.get_width()
+    text_h = text.get_height()
+    screen.blit(text, (text_x, text_y))
+    pygame.draw.rect(screen, (0, 255, 0), (text_x - 10, text_y - 10,
+                                           text_w + 20, text_h + 20), 1)
+
 player = Board(False)
 enemy = Board(True)
 player.set_view(20, 20, 30)
 enemy.set_view(340, 20, 30)
 clock = pygame.time.Clock()
-running = True
 enemy_turn = False
+running = True
 while running:
     if enemy_turn:
         cell = player.random_valid_shot()
@@ -191,8 +202,17 @@ while running:
     if player.is_dead() or enemy.is_dead():
         running = False
     clock.tick(5)
-print('game over')
+
 if player.is_dead():
-    print('you losе')
+    txt = 'You losе'
 if enemy.is_dead():
-    print('you win!')
+    txt = 'You win!'
+
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type in [pygame.QUIT, pygame.KEYDOWN]:
+            running = False
+    screen.fill(pygame.Color('black'))
+    draw_text(txt)
+    pygame.display.flip()
