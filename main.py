@@ -4,7 +4,7 @@ import random
 pygame.init()
 size = 660, 340
 screen = pygame.display.set_mode(size)
-
+txt = None
 
 class Board:
     water = pygame.Color('blue')
@@ -95,7 +95,7 @@ class Board:
     # Случайное не проверенный выстрел
     def random_shot(self):
         x = random.randint(0, self.width - 1)
-        y = random.randint(0, self.height - 1)        
+        y = random.randint(0, self.height - 1)
         return x, y
 
     # Восстанавливает корабль по клетке
@@ -226,6 +226,7 @@ while running:
     for event in pygame.event.get():
         if event.type in [pygame.QUIT, pygame.KEYDOWN]:
             running = False
-    screen.fill(pygame.Color('black'))
-    draw_text(txt)
+    if txt != None:
+        screen.fill(pygame.Color('black'))
+        draw_text(txt)
     pygame.display.flip()
