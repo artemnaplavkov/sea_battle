@@ -5,10 +5,6 @@ pygame.init()
 size = 660, 340
 screen = pygame.display.set_mode(size)
 
-def draw_n(n, pos, size):
-    font = pygame.font.Font(None, size)
-    text = font.render(str(n), 1, (100, 255, 100))
-    screen.blit(text, pos)
 
 class Board:
     water = pygame.Color('blue')
@@ -26,14 +22,17 @@ class Board:
         self.cell_size = 30
         self.disposition()
 
+    # Задаёт положение доски на экране
     def set_view(self, left, top, cell_size):
         self.left = left
         self.top = top
         self.cell_size = cell_size
 
+    # Проверяет координаты клетки на выход за доску
     def is_out(self, x, y):
         return x < 0 or x >= self.width or y < 0 or y >= self.height
 
+    # Получает координаты клетки из позиции мыши
     def get_cell(self, mouse_pos):
         cell_x = (mouse_pos[0] - self.left) // self.cell_size
         cell_y = (mouse_pos[1] - self.top) // self.cell_size
@@ -41,6 +40,7 @@ class Board:
             return None
         return cell_x, cell_y
 
+    # Проверят есть ли место для корабля в данной клетке
     def is_free(self, x, y):
         for dx in [-1, 0, 1]:
             for dy in [-1, 0, 1]:
@@ -50,12 +50,14 @@ class Board:
                     return False
         return True
 
+    # Проверяет можно ли разместить коралбль в клетке
     def is_valid_ship(self, ship):
         for x, y in ship:
             if self.is_out(x, y) or not self.is_free(x, y):
                 return False
         return True
 
+    # Случайное не проверенное размещение корабля
     def random_ship(self, decks):
         result = []
         x = random.randint(0, self.width - 1)
@@ -70,12 +72,14 @@ class Board:
             result.append((x + dx * deck, y + dy * deck))
         return result
 
+    # Случайное допустимое размещение корабля
     def random_valid_ship(self, decks):
         while True:
             ship = self.random_ship(decks)
             if self.is_valid_ship(ship):
                 return ship
 
+    # Размещение всех кораблей
     def disposition(self):
         self.board = [[Board.water] * self.width for _ in range(self.height)]
         for deck in [4, 3, 3, 2, 2, 2, 1, 1, 1, 1]:
@@ -83,15 +87,18 @@ class Board:
             for x, y in ship:
                 self.board[y][x] = Board.ship
 
+    # Проверяет допустим ли выстрел
     def is_valid_shot(self, shot):
         x, y = shot
         return self.board[y][x] in [Board.water, Board.ship]
 
+    # Случайное не проверенный выстрел
     def random_shot(self):
         x = random.randint(0, self.width - 1)
         y = random.randint(0, self.height - 1)        
         return x, y
 
+    # Восстанавливает корабль по клетке
     def get_ship(self, cell):
         ship = []
         queue = [cell]
@@ -110,12 +117,14 @@ class Board:
             queue.append((x - 1, y))
         return ship
 
+    # Проверяет мёртв ли корабль
     def is_ship_dead(self, ship):
         for x, y in ship:
             if self.board[y][x] == Board.ship:
                 return False
         return True
 
+    # Помечает корабль мёртвым и соседние клетки
     def set_ship_dead(self, ship):
         for x, y in ship:
             self.board[y][x] = Board.dead
@@ -123,7 +132,7 @@ class Board:
                 if not self.is_out(x + dx, y + dy) and self.board[y + dy][x + dx] == Board.water:
                     self.board[y + dy][x + dx] = Board.miss
 
-
+    # Выстрел по клетке
     def on_shot(self, shot):
         x, y = shot
         if self.board[y][x] == Board.water:
@@ -140,12 +149,14 @@ class Board:
             return True
 
 
+    # Случайный допустимый выстрел
     def random_valid_shot(self):
         while True:
             shot = self.random_shot()
             if self.is_valid_shot(shot):
                 return shot
 
+    # Рисование
     def render(self):
         radius = self.cell_size // 2
         for y in range(self.height):
@@ -158,7 +169,8 @@ class Board:
                     color = pygame.Color('black')
                 pygame.draw.rect(screen, color, rect)
                 pygame.draw.rect(screen, pygame.Color('white'), rect, 2)
-                
+
+    # Мертва ли доска
     def is_dead(self):
         for y in range(self.height):
             for x in range(self.width):
@@ -166,6 +178,7 @@ class Board:
                     return False
         return True
 
+# Надпись в центре экрана
 def draw_text(txt):
     font = pygame.font.Font(None, 50)
     text = font.render(txt, True, (100, 255, 100))
